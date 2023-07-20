@@ -1,0 +1,48 @@
+version: 0.2
+
+env:
+  parameter-store:
+      DOCKER_REGISTRY_USERNAME: /myapp/dockercredentials/dockerusername
+      DOCKER_REGISTRY_PASSWORD: /myapp/dockercredentials/dockerpass
+      DOCKER_REGISTRY_URL: /myapp/dockercredentials/dockerurl
+
+phases:
+  install:
+    #If you use the Ubuntu standard image 2.0 or later, you must specify runtime-versions.
+    #If you specify runtime-versions and use an image other than Ubuntu standard image 2.0, the build fails.
+    runtime-versions:
+      python: 3.11 
+      # name: version
+  pre_build:
+      commands:
+        - pip install -r requirements.txt
+      # - command
+  build:
+    commands:
+      - echo "Building Docker Image"
+      - echo "$DOCKER_REGISTRY_PASSWORD" | docker login -u "$DOCKER_REGISTRY_USERNAME" --password-stdin "$DOCKER_REGISTRY_URL"
+      - docker build -t "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/pyapp:latest" .
+      - docker push "$DOCKER_REGISTRY_URL/$DOCKER_REGISTRY_USERNAME/pyapp:latest"
+    
+  post_build:
+    commands:
+      - echo Build is Successfull
+      # - command
+#reports:
+  #report-name-or-arn:
+    #files:
+      # - location
+      # - location
+    #base-directory: location
+    #discard-paths: yes
+    #file-format: JunitXml | CucumberJson
+artifacts:
+   files:
+     - '**/*'
+     #- location
+  #name: $(date +%Y-%m-%d)
+  #discard-paths: no
+   base-directory: ../scripts/
+#cache:
+  #paths:
+    # - paths
